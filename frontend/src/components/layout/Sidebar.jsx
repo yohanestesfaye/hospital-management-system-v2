@@ -1,3 +1,5 @@
+import { NavLink } from "react-router-dom";
+
 import {
   LayoutDashboard,
   Users,
@@ -18,25 +20,67 @@ import {
 const navigation = [
   {
     label: "Overview",
-    items: [{ name: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      {
+        name: "Dashboard",
+        icon: LayoutDashboard,
+        path: "/dashboard",
+      },
+    ],
   },
   {
     label: "Clinical",
     items: [
-      { name: "Patients", icon: Users },
-      { name: "Doctors", icon: Stethoscope },
-      { name: "Appointments", icon: CalendarDays },
-      { name: "Medical Records", icon: FileText },
-      { name: "Laboratory", icon: FlaskConical },
+      {
+        name: "Patients",
+        icon: Users,
+        path: "/patients",
+      },
+      {
+        name: "Doctors",
+        icon: Stethoscope,
+        path: "/doctors",
+      },
+      {
+        name: "Appointments",
+        icon: CalendarDays,
+        path: "/appointments",
+      },
+      {
+        name: "Medical Records",
+        icon: FileText,
+        path: "/medical-records",
+      },
+      {
+        name: "Laboratory",
+        icon: FlaskConical,
+        path: "/laboratory",
+      },
     ],
   },
   {
     label: "Operations",
     items: [
-      { name: "Pharmacy", icon: Pill },
-      { name: "Billing", icon: Receipt },
-      { name: "Inventory", icon: Package },
-      { name: "Reports", icon: BarChart3 },
+      {
+        name: "Pharmacy",
+        icon: Pill,
+        path: "/pharmacy",
+      },
+      {
+        name: "Billing",
+        icon: Receipt,
+        path: "/billing",
+      },
+      {
+        name: "Inventory",
+        icon: Package,
+        path: "/inventory",
+      },
+      {
+        name: "Reports",
+        icon: BarChart3,
+        path: "/reports",
+      },
     ],
   },
 ];
@@ -47,6 +91,7 @@ function Sidebar({ mobileOpen, onClose }) {
       {/* Mobile overlay */}
       {mobileOpen && (
         <button
+          type="button"
           aria-label="Close sidebar"
           onClick={onClose}
           className="fixed inset-0 z-40 bg-slate-950/40 lg:hidden"
@@ -54,7 +99,7 @@ function Sidebar({ mobileOpen, onClose }) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:flex lg:h-screen lg:w-64 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:h-screen lg:w-64 lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -66,14 +111,19 @@ function Sidebar({ mobileOpen, onClose }) {
             </div>
 
             <div>
-              <h1 className="text-sm font-bold text-slate-900">HMS</h1>
+              <h1 className="text-sm font-bold text-slate-900">
+                HMS
+              </h1>
+
               <p className="text-xs text-slate-500">
                 Hospital Management
               </p>
             </div>
           </div>
 
+          {/* Mobile close button */}
           <button
+            type="button"
             onClick={onClose}
             className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
             aria-label="Close navigation"
@@ -93,20 +143,23 @@ function Sidebar({ mobileOpen, onClose }) {
               <div className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const active = item.name === "Dashboard";
 
                   return (
-                    <button
+                    <NavLink
                       key={item.name}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                        active
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                      }`}
+                      to={item.path}
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+                          isActive
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        }`
+                      }
                     >
                       <Icon size={18} />
                       <span>{item.name}</span>
-                    </button>
+                    </NavLink>
                   );
                 })}
               </div>
@@ -116,14 +169,20 @@ function Sidebar({ mobileOpen, onClose }) {
 
         {/* Bottom actions */}
         <div className="border-t border-slate-200 p-3">
-          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900">
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          >
             <Settings size={18} />
-            Settings
+            <span>Settings</span>
           </button>
 
-          <button className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600">
+          <button
+            type="button"
+            className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600"
+          >
             <LogOut size={18} />
-            Sign out
+            <span>Sign out</span>
           </button>
         </div>
       </aside>
