@@ -1,6 +1,13 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
 import Dashboard from "../pages/dashboard/Dashboard";
+import Login from "../pages/auth/Login";
+
 import Patients from "../pages/patients/Patients";
 import Doctors from "../pages/doctors/Doctors";
 import Appointments from "../pages/appointments/Appointments";
@@ -11,23 +18,75 @@ import Billing from "../pages/billing/Billing";
 import Inventory from "../pages/inventory/Inventory";
 import Reports from "../pages/reports/Reports";
 
+import ProtectedRoute from "./ProtectedRoute";
+
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
 
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/patients" element={<Patients />} />
-        <Route path="/doctors" element={<Doctors />} />
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/medical-records" element={<MedicalRecords />} />
-        <Route path="/laboratory" element={<Laboratory />} />
-        <Route path="/pharmacy" element={<Pharmacy />} />
-        <Route path="/billing" element={<Billing />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/reports" element={<Reports />} />
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
 
+          <Route
+            path="/patients"
+            element={<Patients />}
+          />
+
+          <Route
+            path="/doctors"
+            element={<Doctors />}
+          />
+
+          <Route
+            path="/appointments"
+            element={<Appointments />}
+          />
+
+          <Route
+            path="/medical-records"
+            element={<MedicalRecords />}
+          />
+
+          <Route
+            path="/laboratory"
+            element={<Laboratory />}
+          />
+
+          <Route
+            path="/pharmacy"
+            element={<Pharmacy />}
+          />
+
+          <Route
+            path="/billing"
+            element={<Billing />}
+          />
+
+          <Route
+            path="/inventory"
+            element={<Inventory />}
+          />
+
+          <Route
+            path="/reports"
+            element={<Reports />}
+          />
+        </Route>
+
+        {/* Default route */}
+        <Route
+          path="/"
+          element={<Navigate to="/dashboard" replace />}
+        />
+
+        {/* Unknown routes */}
         <Route
           path="*"
           element={<Navigate to="/dashboard" replace />}

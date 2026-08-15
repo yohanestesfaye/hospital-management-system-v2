@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-
+import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard,
   Users,
@@ -86,6 +86,7 @@ const navigation = [
 ];
 
 function Sidebar({ mobileOpen, onClose }) {
+  const { logout } = useAuth();
   return (
     <>
       {/* Mobile overlay */}
@@ -177,13 +178,14 @@ function Sidebar({ mobileOpen, onClose }) {
             <span>Settings</span>
           </button>
 
-          <button
-            type="button"
-            className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600"
-          >
-            <LogOut size={18} />
-            <span>Sign out</span>
-          </button>
+         <button
+  type="button"
+  onClick={logout}
+  className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600"
+>
+  <LogOut size={18} />
+  <span>Sign out</span>
+</button>
         </div>
       </aside>
     </>
