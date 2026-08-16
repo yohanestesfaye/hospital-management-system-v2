@@ -228,3 +228,143 @@ CREATE INDEX idx_appointments_date
 
 CREATE INDEX idx_appointments_status
     ON appointments(status);
+
+
+
+    -- =====================================================
+-- MEDICAL RECORDS
+-- =====================================================
+
+CREATE TABLE medical_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    patient_id UUID NOT NULL,
+    doctor_id UUID NOT NULL,
+    appointment_id UUID,
+
+    diagnosis TEXT NOT NULL,
+    symptoms TEXT,
+    treatment_plan TEXT,
+
+    notes TEXT,
+
+    record_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT medical_records_patient_fk
+        FOREIGN KEY (patient_id)
+        REFERENCES patients(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT medical_records_doctor_fk
+        FOREIGN KEY (doctor_id)
+        REFERENCES doctors(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT medical_records_appointment_fk
+        FOREIGN KEY (appointment_id)
+        REFERENCES appointments(id)
+        ON DELETE SET NULL
+);
+
+
+-- =====================================================
+-- PRESCRIPTIONS
+-- =====================================================
+
+CREATE TABLE prescriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    patient_id UUID NOT NULL,
+    doctor_id UUID NOT NULL,
+    medical_record_id UUID,
+
+    prescription_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    notes TEXT,
+
+    status VARCHAR(30) NOT NULL DEFAULT 'active',
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT prescriptions_patient_fk
+        FOREIGN KEY (patient_id)
+        REFERENCES patients(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT prescriptions_doctor_fk
+        FOREIGN KEY (doctor_id)
+        REFERENCES doctors(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT prescriptions_medical_record_fk
+        FOREIGN KEY (medical_record_id)
+        REFERENCES medical_records(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT prescriptions_status_check
+        CHECK (
+            status IN (
+                'active',
+                'completed',
+                'cancelled'
+            )
+        )
+);
+
+
+-- =====================================================
+-- PRESCRIPTION ITEMS
+-- =====================================================
+
+CREATE TABLE prescription_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    prescription_id UUID NOT NULL,
+
+    medicine_name VARCHAR(200) NOT NULL,
+
+    dosage VARCHAR(100),
+    frequency VARCHAR(100),
+    duration VARCHAR(100),
+
+    quantity INTEGER,
+
+    instructions TEXT,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT prescription_items_prescription_fk
+        FOREIGN KEY (prescription_id)
+        REFERENCES prescriptions(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT prescription_items_quantity_check
+        CHECK (quantity IS NULL OR quantity > 0)
+);
+
+
+-- =====================================================
+-- INDEXES
+-- =====================================================
+
+CREATE INDEX idx_medical_records_patient
+    ON medical_records(patient_id);
+
+CREATE INDEX idx_medical_records_doctor
+    ON medical_records(doctor_id);
+
+CREATE INDEX idx_medical_records_date
+    ON medical_records(record_date);
+
+CREATE INDEX idx_prescriptions_patient
+    ON prescriptions(patient_id);
+
+CREATE INDEX idx_prescriptions_doctor
+    ON prescriptions(doctor_id);
+
+CREATE INDEX idx_prescription_items_prescription
+    ON prescription_items(prescription_id);
