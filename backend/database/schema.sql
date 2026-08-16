@@ -673,3 +673,192 @@ CREATE INDEX idx_lab_order_items_order
 
 CREATE INDEX idx_lab_order_items_test
     ON lab_order_items(lab_test_id);
+
+
+    -- =====================================================
+-- INVOICES
+-- =====================================================
+
+CREATE TABLE invoices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    invoice_number VARCHAR(50) UNIQUE NOT NULL,
+
+    patient_id UUID NOT NULL,
+
+    appointment_id UUID,
+
+    subtotal NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    discount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    tax NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+
+    amount_paid NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    balance_due NUMERIC(10, 2) NOT NULL DEFAULT 0,
+
+    status VARCHAR(30) NOT NULL DEFAULT 'unpaid',
+
+    due_date DATE,
+
+    notes TEXT,
+
+    created_by UUID,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT invoices_patient_fk
+        FOREIGN KEY (patient_id)
+        REFERENCES patients(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT invoices_appointment_fk
+        FOREIGN KEY (appointment_id)
+        REFERENCES appointments(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT invoices_created_by_fk
+        FOREIGN KEY (created_by)
+        REFERENCES users(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT invoices_subtotal_check
+        CHECK (subtotal >= 0),
+
+    CONSTRAINT invoices_discount_check
+        CHECK (discount >= 0),
+
+    CONSTRAINT invoices_tax_check
+        CHECK (tax >= 0),
+
+    CONSTRAINT invoices_total_check
+        CHECK (total_amount >= 0),
+
+    CONSTRAINT invoices_paid_check
+        CHECK (amount_paid >= 0),
+
+    CONSTRAINT invoices_balance_check
+        CHECK (balance_due >= 0),
+
+    CONSTRAINT invoices_status_check
+        CHECK (
+            status IN (
+                'unpaid',
+                'partially_paid',
+                'paid',
+                'overdue',
+                'cancelled'
+            )
+        )
+);
+
+
+-- =====================================================
+-- INVOICE ITEMS
+-- =====================================================
+
+CREATE TABLE invoice_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    invoice_id UUID NOT NULL,
+
+    description VARCHAR(255) NOT NULL,
+
+    quantity INTEGER NOT NULL DEFAULT 1,
+
+    unit_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+
+    total_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT invoice_items_invoice_fk
+        FOREIGN KEY (invoice_id)
+        REFERENCES invoices(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT invoice_items_quantity_check
+        CHECK (quantity > 0),
+
+    CONSTRAINT invoice_items_unit_price_check
+        CHECK (unit_price >= 0),
+
+    CONSTRAINT invoice_items_total_price_check
+        CHECK (total_price >= 0)
+);
+
+
+-- =====================================================
+-- PAYMENTS
+-- =====================================================
+
+CREATE TABLE payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    invoice_id UUID NOT NULL,
+
+    amount NUMERIC(10, 2) NOT NULL,
+
+    payment_method VARCHAR(30) NOT NULL,
+
+    transaction_reference VARCHAR(150),
+
+    payment_date TIMESTAMP WITH TIME ZONE
+        DEFAULT CURRENT_TIMESTAMP,
+
+    received_by UUID,
+
+    notes TEXT,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT payments_invoice_fk
+        FOREIGN KEY (invoice_id)
+        REFERENCES invoices(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT payments_received_by_fk
+        FOREIGN KEY (received_by)
+        REFERENCES users(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT payments_amount_check
+        CHECK (amount > 0),
+
+    CONSTRAINT payments_method_check
+        CHECK (
+            payment_method IN (
+                'cash',
+                'card',
+                'bank_transfer',
+                'mobile_money',
+                'insurance'
+            )
+        )
+);
+
+
+-- =====================================================
+-- INDEXES
+-- =====================================================
+
+CREATE INDEX idx_invoices_patient
+    ON invoices(patient_id);
+
+CREATE INDEX idx_invoices_appointment
+    ON invoices(appointment_id);
+
+CREATE INDEX idx_invoices_status
+    ON invoices(status);
+
+CREATE INDEX idx_invoices_due_date
+    ON invoices(due_date);
+
+CREATE INDEX idx_invoice_items_invoice
+    ON invoice_items(invoice_id);
+
+CREATE INDEX idx_payments_invoice
+    ON payments(invoice_id);
+
+CREATE INDEX idx_payments_date
+    ON payments(payment_date);
