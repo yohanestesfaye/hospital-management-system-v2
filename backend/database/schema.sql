@@ -368,3 +368,156 @@ CREATE INDEX idx_prescriptions_doctor
 
 CREATE INDEX idx_prescription_items_prescription
     ON prescription_items(prescription_id);
+
+    -- =====================================================
+-- MEDICINES
+-- =====================================================
+
+CREATE TABLE medicines (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    name VARCHAR(200) NOT NULL,
+    generic_name VARCHAR(200),
+
+    category VARCHAR(100),
+    description TEXT,
+
+    manufacturer VARCHAR(200),
+
+    unit VARCHAR(50) NOT NULL DEFAULT 'unit',
+
+    quantity_in_stock INTEGER NOT NULL DEFAULT 0,
+    reorder_level INTEGER NOT NULL DEFAULT 10,
+
+    unit_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+
+    expiry_date DATE,
+
+    batch_number VARCHAR(100),
+
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT medicines_stock_check
+        CHECK (quantity_in_stock >= 0),
+
+    CONSTRAINT medicines_reorder_check
+        CHECK (reorder_level >= 0),
+
+    CONSTRAINT medicines_price_check
+        CHECK (unit_price >= 0)
+);
+
+
+-- =====================================================
+-- PHARMACY DISPENSING
+-- =====================================================
+
+CREATE TABLE pharmacy_dispensing (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    patient_id UUID NOT NULL,
+    prescription_id UUID,
+
+    dispensed_by UUID,
+
+    dispensing_date TIMESTAMP WITH TIME ZONE
+        DEFAULT CURRENT_TIMESTAMP,
+
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+
+    notes TEXT,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pharmacy_patient_fk
+        FOREIGN KEY (patient_id)
+        REFERENCES patients(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT pharmacy_prescription_fk
+        FOREIGN KEY (prescription_id)
+        REFERENCES prescriptions(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT pharmacy_dispensed_by_fk
+        FOREIGN KEY (dispensed_by)
+        REFERENCES users(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT pharmacy_status_check
+        CHECK (
+            status IN (
+                'pending',
+                'dispensed',
+                'cancelled'
+            )
+        )
+);
+
+
+-- =====================================================
+-- PHARMACY DISPENSING ITEMS
+-- =====================================================
+
+CREATE TABLE pharmacy_dispensing_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    dispensing_id UUID NOT NULL,
+    medicine_id UUID NOT NULL,
+
+    quantity INTEGER NOT NULL,
+
+    unit_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+
+    created_at TIMESTAMP WITH TIME ZONE
+        DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT dispensing_items_dispensing_fk
+        FOREIGN KEY (dispensing_id)
+        REFERENCES pharmacy_dispensing(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT dispensing_items_medicine_fk
+        FOREIGN KEY (medicine_id)
+        REFERENCES medicines(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT dispensing_items_quantity_check
+        CHECK (quantity > 0),
+
+    CONSTRAINT dispensing_items_price_check
+        CHECK (unit_price >= 0)
+);
+
+
+-- =====================================================
+-- INDEXES
+-- =====================================================
+
+CREATE INDEX idx_medicines_name
+    ON medicines(name);
+
+CREATE INDEX idx_medicines_category
+    ON medicines(category);
+
+CREATE INDEX idx_medicines_expiry
+    ON medicines(expiry_date);
+
+CREATE INDEX idx_medicines_stock
+    ON medicines(quantity_in_stock);
+
+CREATE INDEX idx_pharmacy_patient
+    ON pharmacy_dispensing(patient_id);
+
+CREATE INDEX idx_pharmacy_prescription
+    ON pharmacy_dispensing(prescription_id);
+
+CREATE INDEX idx_pharmacy_items_dispensing
+    ON pharmacy_dispensing_items(dispensing_id);
+
+CREATE INDEX idx_pharmacy_items_medicine
+    ON pharmacy_dispensing_items(medicine_id);
