@@ -521,3 +521,155 @@ CREATE INDEX idx_pharmacy_items_dispensing
 
 CREATE INDEX idx_pharmacy_items_medicine
     ON pharmacy_dispensing_items(medicine_id);
+
+
+    -- =====================================================
+-- LABORATORY TESTS
+-- =====================================================
+
+CREATE TABLE lab_tests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    name VARCHAR(200) NOT NULL,
+    category VARCHAR(100),
+
+    description TEXT,
+
+    price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+
+    normal_range TEXT,
+    unit VARCHAR(50),
+
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT lab_tests_price_check
+        CHECK (price >= 0)
+);
+
+
+-- =====================================================
+-- LAB ORDERS
+-- =====================================================
+
+CREATE TABLE lab_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    patient_id UUID NOT NULL,
+    doctor_id UUID NOT NULL,
+    appointment_id UUID,
+
+    order_date TIMESTAMP WITH TIME ZONE
+        DEFAULT CURRENT_TIMESTAMP,
+
+    status VARCHAR(30) NOT NULL DEFAULT 'ordered',
+
+    clinical_notes TEXT,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT lab_orders_patient_fk
+        FOREIGN KEY (patient_id)
+        REFERENCES patients(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT lab_orders_doctor_fk
+        FOREIGN KEY (doctor_id)
+        REFERENCES doctors(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT lab_orders_appointment_fk
+        FOREIGN KEY (appointment_id)
+        REFERENCES appointments(id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT lab_orders_status_check
+        CHECK (
+            status IN (
+                'ordered',
+                'sample_collected',
+                'processing',
+                'completed',
+                'cancelled'
+            )
+        )
+);
+
+
+-- =====================================================
+-- LAB ORDER ITEMS
+-- =====================================================
+
+CREATE TABLE lab_order_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    lab_order_id UUID NOT NULL,
+    lab_test_id UUID NOT NULL,
+
+    result TEXT,
+    result_value VARCHAR(200),
+
+    result_unit VARCHAR(50),
+    reference_range TEXT,
+
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+
+    technician_notes TEXT,
+
+    completed_at TIMESTAMP WITH TIME ZONE,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT lab_order_items_order_fk
+        FOREIGN KEY (lab_order_id)
+        REFERENCES lab_orders(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT lab_order_items_test_fk
+        FOREIGN KEY (lab_test_id)
+        REFERENCES lab_tests(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT lab_order_items_status_check
+        CHECK (
+            status IN (
+                'pending',
+                'processing',
+                'completed',
+                'cancelled'
+            )
+        )
+);
+
+
+-- =====================================================
+-- INDEXES
+-- =====================================================
+
+CREATE INDEX idx_lab_tests_name
+    ON lab_tests(name);
+
+CREATE INDEX idx_lab_tests_category
+    ON lab_tests(category);
+
+CREATE INDEX idx_lab_orders_patient
+    ON lab_orders(patient_id);
+
+CREATE INDEX idx_lab_orders_doctor
+    ON lab_orders(doctor_id);
+
+CREATE INDEX idx_lab_orders_date
+    ON lab_orders(order_date);
+
+CREATE INDEX idx_lab_orders_status
+    ON lab_orders(status);
+
+CREATE INDEX idx_lab_order_items_order
+    ON lab_order_items(lab_order_id);
+
+CREATE INDEX idx_lab_order_items_test
+    ON lab_order_items(lab_test_id);
