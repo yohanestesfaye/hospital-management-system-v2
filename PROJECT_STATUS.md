@@ -72,12 +72,13 @@
 - [x] Prescription items (nested management in transactions)
 
 
-## Pharmacy
+## Pharmacy & Medicines
 
-- [ ] Medicine CRUD
-- [ ] Dispensing
-- [ ] Stock management
-- [ ] Low-stock detection
+- [x] Medicine CRUD (GET, GET /:id, POST, PUT, DELETE)
+- [x] Low-stock detection (GET /api/medicines/low-stock)
+- [x] Dispensing CRUD (GET, GET /:id, POST, PUT, DELETE)
+- [x] Stock deduction and transactions
+
 
 ## Laboratory
 
