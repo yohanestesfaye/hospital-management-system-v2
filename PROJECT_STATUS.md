@@ -82,10 +82,11 @@
 
 ## Laboratory
 
-- [ ] Laboratory test CRUD
-- [ ] Lab orders
-- [ ] Lab order items
-- [ ] Results
+- [x] Laboratory test CRUD (GET, GET /:id, POST, PUT, DELETE)
+- [x] Lab orders (GET, GET /:id, POST, PUT, DELETE)
+- [x] Lab order items & Results updating (PUT /api/lab/items/:itemId/result)
+- [x] Automatic order completion upon item completion
+
 
 ## Billing
 
