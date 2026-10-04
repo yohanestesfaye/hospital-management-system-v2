@@ -8,6 +8,7 @@ const medicineRoutes = require("./routes/medicineRoutes");
 const pharmacyRoutes = require("./routes/pharmacyRoutes");
 const labRoutes = require("./routes/labRoutes");
 const billingRoutes = require("./routes/billingRoutes");
+const authRoutes = require("./routes/authRoutes");
 const { testDatabaseConnection } = require("./config/database");
 const express = require("express");
 const cors = require("cors");
@@ -25,6 +26,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/doctors", doctorRoutes);
@@ -35,6 +37,7 @@ app.use("/api/medicines", medicineRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api/billing", billingRoutes);
+
 
 
 

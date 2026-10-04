@@ -98,22 +98,22 @@
 
 ## Authentication
 
-- [ ] Registration
-- [ ] Login
-- [ ] Authentication middleware
-- [ ] Current-user endpoint
-- [ ] Password hashing
+- [x] Registration
+- [x] Login
+- [x] Authentication middleware
+- [x] Current-user endpoint
+- [x] Password hashing
 
 ## Authorization
 
-- [ ] Role middleware
-- [ ] Admin permissions
-- [ ] Doctor permissions
-- [ ] Nurse permissions
-- [ ] Receptionist permissions
-- [ ] Pharmacist permissions
-- [ ] Laboratory permissions
-- [ ] Accountant permissions
+- [x] Role middleware
+- [x] Admin permissions
+- [x] Doctor permissions
+- [x] Nurse permissions
+- [x] Receptionist permissions
+- [x] Pharmacist permissions
+- [x] Laboratory permissions
+- [x] Accountant permissions
 
 ## Frontend
 
