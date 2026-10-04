@@ -7,6 +7,7 @@ const prescriptionRoutes = require("./routes/prescriptionRoutes");
 const medicineRoutes = require("./routes/medicineRoutes");
 const pharmacyRoutes = require("./routes/pharmacyRoutes");
 const labRoutes = require("./routes/labRoutes");
+const billingRoutes = require("./routes/billingRoutes");
 const { testDatabaseConnection } = require("./config/database");
 const express = require("express");
 const cors = require("cors");
@@ -33,6 +34,8 @@ app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/medicines", medicineRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);
 app.use("/api/lab", labRoutes);
+app.use("/api/billing", billingRoutes);
+
 
 
 

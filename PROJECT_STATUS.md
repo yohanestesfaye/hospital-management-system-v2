@@ -90,10 +90,11 @@
 
 ## Billing
 
-- [ ] Invoices
-- [ ] Invoice items
-- [ ] Payments
-- [ ] Balance calculations
+- [x] Invoices (GET, GET /:id, POST, PUT, DELETE)
+- [x] Invoice items (nested line items & total calculations)
+- [x] Payments (GET, POST /payments with balance deductions)
+- [x] Balance calculations and auto-status updates (unpaid -> partially_paid -> paid)
+
 
 ## Authentication
 
