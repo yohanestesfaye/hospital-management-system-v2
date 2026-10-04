@@ -28,11 +28,12 @@
 
 ## Departments
 
-- [ ] GET
-- [ ] GET by ID
-- [ ] POST
-- [ ] PUT
-- [ ] DELETE
+- [x] GET /api/departments
+- [x] GET /api/departments/:id
+- [x] POST /api/departments
+- [x] PUT /api/departments/:id
+- [x] DELETE /api/departments/:id
+
 
 ## Doctors
 

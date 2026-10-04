@@ -1,4 +1,5 @@
 const patientRoutes = require("./routes/patientRoutes");
+const departmentRoutes = require("./routes/departmentRoutes");
 const { testDatabaseConnection } = require("./config/database");
 const express = require("express");
 const cors = require("cors");
@@ -17,6 +18,8 @@ app.use(
 
 app.use(express.json());
 app.use("/api/patients", patientRoutes);
+app.use("/api/departments", departmentRoutes);
+
 
 // Health check
 app.get("/api/health", (req, res) => {
