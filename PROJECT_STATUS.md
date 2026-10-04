@@ -37,11 +37,12 @@
 
 ## Doctors
 
-- [ ] GET
-- [ ] GET by ID
-- [ ] POST
-- [ ] PUT
-- [ ] DELETE
+- [x] GET /api/doctors
+- [x] GET /api/doctors/:id
+- [x] POST /api/doctors
+- [x] PUT /api/doctors/:id
+- [x] DELETE /api/doctors/:id
+
 
 ## Appointments
 
