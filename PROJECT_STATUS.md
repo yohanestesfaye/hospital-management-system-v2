@@ -64,8 +64,13 @@
 
 ## Prescriptions
 
-- [ ] Prescription CRUD
-- [ ] Prescription items
+- [x] GET /api/prescriptions
+- [x] GET /api/prescriptions/:id
+- [x] POST /api/prescriptions
+- [x] PUT /api/prescriptions/:id
+- [x] DELETE /api/prescriptions/:id
+- [x] Prescription items (nested management in transactions)
+
 
 ## Pharmacy
 
