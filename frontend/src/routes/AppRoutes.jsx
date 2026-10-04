@@ -10,6 +10,7 @@ import Login from "../pages/auth/Login";
 
 import Patients from "../pages/patients/Patients";
 import Doctors from "../pages/doctors/Doctors";
+import Departments from "../pages/departments/Departments";
 import Appointments from "../pages/appointments/Appointments";
 import MedicalRecords from "../pages/medical-records/MedicalRecords";
 import Laboratory from "../pages/laboratory/Laboratory";
@@ -42,6 +43,11 @@ function AppRoutes() {
           <Route
             path="/doctors"
             element={<Doctors />}
+          />
+
+          <Route
+            path="/departments"
+            element={<Departments />}
           />
 
           <Route

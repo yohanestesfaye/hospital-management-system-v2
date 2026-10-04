@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Users,
   Stethoscope,
+  Building2,
   CalendarDays,
   FileText,
   FlaskConical,
@@ -40,6 +41,11 @@ const navigation = [
         name: "Doctors",
         icon: Stethoscope,
         path: "/doctors",
+      },
+      {
+        name: "Departments",
+        icon: Building2,
+        path: "/departments",
       },
       {
         name: "Appointments",

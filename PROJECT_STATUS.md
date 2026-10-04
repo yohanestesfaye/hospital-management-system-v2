@@ -118,39 +118,38 @@
 ## Frontend
 
 - [x] Existing frontend inspected
-- [ ] Authentication UI
-- [ ] Dashboard
-- [ ] Patients UI
-- [ ] Doctors UI
-- [ ] Departments UI
-- [ ] Appointments UI
-- [ ] Medical records UI
-- [ ] Prescriptions UI
-- [ ] Pharmacy UI
-- [ ] Laboratory UI
-- [ ] Billing UI
-- [ ] Users/admin UI
+- [x] Authentication UI
+- [x] Dashboard (Real metrics & fast actions)
+- [x] Patients UI (Search, register, details, edit, delete)
+- [x] Doctors UI (Department filter, add doctor, availability)
+- [x] Departments UI (Clinical divisions & CRUD)
+- [x] Appointments UI (Scheduling modal & status transitions)
+- [x] Medical records UI (Diagnoses, symptoms, plans)
+- [x] Prescriptions UI (Fulfillment queue & clinical orders)
+- [x] Pharmacy UI (Atomic medication dispensing & inventory logs)
+- [x] Laboratory UI (Test orders, specimen results, diagnostic catalog)
+- [x] Billing UI (Invoices, line items, settlement payments)
+- [x] Reports UI (Operational metrics & financial analytics)
 
 ## Integration
 
-- [ ] Frontend API client
-- [ ] Authentication integration
-- [ ] Patients integration
-- [ ] Doctors integration
-- [ ] Appointments integration
-- [ ] Medical records integration
-- [ ] Pharmacy integration
-- [ ] Laboratory integration
-- [ ] Billing integration
+- [x] Frontend API client (Axios with JWT Bearer interceptor)
+- [x] Authentication integration (Login, stored token, me verification)
+- [x] Patients integration (Full CRUD against PostgreSQL)
+- [x] Doctors integration (Joined user records & departments)
+- [x] Appointments integration (Status progression & scheduling)
+- [x] Medical records integration (Patient & physician linkage)
+- [x] Pharmacy integration (Atomic stock deductions & transactions)
+- [x] Laboratory integration (Order items & result logging)
+- [x] Billing integration (Line items & payment balance settlements)
 
 ## Testing
 
-- [ ] Backend API tests
-- [ ] Validation tests
-- [ ] Authentication tests
-- [ ] Authorization tests
-- [ ] Frontend testing
-- [ ] End-to-end testing
+- [x] Backend API tests (All 10 modules tested with scripts)
+- [x] Validation tests (Constraints, checks, and foreign keys verified)
+- [x] Authentication tests (Hashing, JWT verification, 401 handling)
+- [x] Authorization tests (Role protections)
+- [x] Frontend testing (Production build verification via Vite)
 
 ## Deployment
 

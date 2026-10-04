@@ -23,23 +23,25 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const result = login(email, password);
+    try {
+      const result = await login(email, password);
 
       if (result.success) {
         navigate("/dashboard", { replace: true });
       } else {
         setError(result.message);
       }
-
+    } catch {
+      setError("An unexpected error occurred during login.");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   return (
