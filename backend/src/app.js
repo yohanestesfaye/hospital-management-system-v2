@@ -1,6 +1,7 @@
 const patientRoutes = require("./routes/patientRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
+const appointmentRoutes = require("./routes/appointmentRoutes");
 const { testDatabaseConnection } = require("./config/database");
 const express = require("express");
 const cors = require("cors");
@@ -21,6 +22,8 @@ app.use(express.json());
 app.use("/api/patients", patientRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/doctors", doctorRoutes);
+app.use("/api/appointments", appointmentRoutes);
+
 
 
 

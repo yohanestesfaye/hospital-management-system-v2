@@ -46,11 +46,12 @@
 
 ## Appointments
 
-- [ ] GET
-- [ ] GET by ID
-- [ ] POST
-- [ ] PUT
-- [ ] DELETE
+- [x] GET /api/appointments
+- [x] GET /api/appointments/:id
+- [x] POST /api/appointments
+- [x] PUT /api/appointments/:id
+- [x] DELETE /api/appointments/:id
+
 
 ## Medical Records
 
