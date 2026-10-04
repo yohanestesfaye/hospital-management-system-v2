@@ -55,7 +55,12 @@
 
 ## Medical Records
 
-- [ ] CRUD
+- [x] GET /api/medical-records
+- [x] GET /api/medical-records/:id
+- [x] POST /api/medical-records
+- [x] PUT /api/medical-records/:id
+- [x] DELETE /api/medical-records/:id
+
 
 ## Prescriptions
 
