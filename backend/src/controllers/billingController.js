@@ -245,7 +245,9 @@ const createInvoice = async (req, res) => {
       appointment_id,
       invoice_number,
       discount,
+      discount_amount,
       tax,
+      tax_amount,
       due_date,
       notes,
       created_by,
@@ -342,7 +344,8 @@ const createInvoice = async (req, res) => {
       });
     }
 
-    const disc = discount !== undefined ? Number(discount) : 0;
+    const rawDisc = discount !== undefined ? discount : discount_amount;
+    const disc = rawDisc !== undefined ? Number(rawDisc) : 0;
     if (isNaN(disc) || disc < 0) {
       return res.status(400).json({
         success: false,
@@ -350,7 +353,8 @@ const createInvoice = async (req, res) => {
       });
     }
 
-    const taxAmount = tax !== undefined ? Number(tax) : 0;
+    const rawTax = tax !== undefined ? tax : tax_amount;
+    const taxAmount = rawTax !== undefined ? Number(rawTax) : 0;
     if (isNaN(taxAmount) || taxAmount < 0) {
       return res.status(400).json({
         success: false,

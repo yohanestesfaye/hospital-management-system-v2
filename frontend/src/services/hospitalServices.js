@@ -185,15 +185,15 @@ export const medicineService = {
 
 export const pharmacyService = {
   getAll: async (params) => {
-    const res = await api.get("/pharmacy/dispensings", { params });
+    const res = await api.get("/pharmacy/dispensing", { params });
     return res.data;
   },
   getById: async (id) => {
-    const res = await api.get(`/pharmacy/dispensings/${id}`);
+    const res = await api.get(`/pharmacy/dispensing/${id}`);
     return res.data;
   },
   create: async (data) => {
-    const res = await api.post("/pharmacy/dispense", data);
+    const res = await api.post("/pharmacy/dispensing", data);
     return res.data;
   },
 };

@@ -14,24 +14,23 @@ Hospital Management System V2 (HMS V2) is a full-stack web application designed 
 - Appointments and scheduling
 - Medical records and clinical consultations
 - Prescriptions and prescription items
-- Pharmacy inventory, stock levels, and dispensing
+- Medicines and Pharmacy dispensing
 - Laboratory tests, lab orders, test items, and results
-- Billing, invoices, invoice items, and payments
+- Invoices, invoice items, and payments
+- Executive dashboard metrics and reporting
 
 ---
 
 ## 2. High-Level Architecture
 
 ```text
-React 19 (Vite SPA + TailwindCSS)
-  ↓
-REST API (JSON over HTTP)
-  ↓
-Node.js + Express 5
-  ↓
-PostgreSQL 15+
-  ↓
-Supabase
+React 19 Frontend (Vite SPA + TailwindCSS)
+             │ (JSON over HTTP + JWT Authorization)
+             ▼
+Node.js + Express 5 REST API (Port 5000)
+             │ (node-postgres connection pool + SSL)
+             ▼
+PostgreSQL Database (Hosted on Supabase)
 ```
 
 ---
@@ -50,24 +49,46 @@ Supabase
 backend/
 ├── .env                       # Environment variables (PORT, DATABASE_URL) [Protected]
 ├── database/
-│   └── schema.sql             # Canonical PostgreSQL schema definition
+│   └── schema.sql             # Canonical PostgreSQL schema definition (17 tables)
 ├── src/
-│   ├── app.js                 # Express app initialization, middleware, routes, server startup
+│   ├── app.js                 # Express app bootstrap, CORS, JSON body parser, route registration, global error handler
 │   ├── config/
 │   │   └── database.js        # Pool setup, SSL configuration, testDatabaseConnection
-│   ├── controllers/
-│   │   └── patientController.js # getPatients, createPatient
-│   ├── middleware/            # Middleware functions (auth, validation, etc.) [Empty]
-│   ├── routes/
-│   │   └── patientRoutes.js   # /api/patients route definitions
-│   └── services/              # Business logic / domain services [Empty]
+│   ├── controllers/           # Domain controllers:
+│   │   ├── authController.js
+│   │   ├── patientController.js
+│   │   ├── departmentController.js
+│   │   ├── doctorController.js
+│   │   ├── appointmentController.js
+│   │   ├── medicalRecordController.js
+│   │   ├── prescriptionController.js
+│   │   ├── medicineController.js
+│   │   ├── pharmacyController.js
+│   │   ├── laboratoryController.js
+│   │   ├── billingController.js
+│   │   └── reportController.js
+│   ├── middleware/
+│   │   └── authMiddleware.js  # authenticate and authorize(...roles)
+│   └── routes/                # Express router mounts:
+│       ├── authRoutes.js          -> /api/auth
+│       ├── patientRoutes.js       -> /api/patients
+│       ├── departmentRoutes.js    -> /api/departments
+│       ├── doctorRoutes.js        -> /api/doctors
+│       ├── appointmentRoutes.js   -> /api/appointments
+│       ├── medicalRecordRoutes.js -> /api/medical-records
+│       ├── prescriptionRoutes.js  -> /api/prescriptions
+│       ├── medicineRoutes.js      -> /api/medicines
+│       ├── pharmacyRoutes.js      -> /api/pharmacy
+│       ├── laboratoryRoutes.js    -> /api/laboratory
+│       ├── billingRoutes.js       -> /api/billing
+│       └── reportRoutes.js        -> /api/reports
 ├── package.json
 └── package-lock.json
 ```
 
 ### Database Import Pattern
 In [database.js](file:///c:/Users/Yohannes/Desktop/hospital-management-system-v2/backend/src/config/database.js), the module exports `{ pool, testDatabaseConnection }`.
-All controllers and services must import the pool as:
+All controllers import the pool as:
 ```javascript
 const { pool } = require("../config/database");
 ```
@@ -96,72 +117,37 @@ frontend/
     ├── main.jsx               # Entrypoint rendering AuthProvider and App inside StrictMode
     ├── index.css              # Global styles and Tailwind imports
     ├── context/
-    │   └── AuthContext.jsx    # AuthProvider with mock user state and localStorage persistence
+    │   └── AuthContext.jsx    # AuthProvider with user state, login, logout, and localStorage persistence
     ├── routes/
-    │   ├── AppRoutes.jsx      # Route definitions (public and protected layout routes)
-    │   └── ProtectedRoute.jsx # Route guard checking isAuthenticated from AuthContext
-    ├── components/
-    │   ├── layout/
-    │   │   ├── DashboardLayout.jsx # Shell layout with Topbar, Sidebar, and main content area
-    │   │   ├── Sidebar.jsx         # Navigation menu with module links
-    │   │   └── Topbar.jsx          # Header with user profile and notifications
-    │   └── ui/
-    │       ├── Badge.jsx           # Variant badge component
-    │       ├── Button.jsx          # Reusable styled button component
-    │       ├── Card.jsx            # Container card component
-    │       └── PageHeader.jsx      # Standard page title & actions header
-    └── pages/
-        ├── PagePlaceholder.jsx     # Placeholder component for upcoming modules
-        ├── auth/
-        │   └── Login.jsx           # Login page with mock credential validation
-        ├── dashboard/
-        │   └── Dashboard.jsx       # Overview dashboard with metrics, quick actions, appointments
-        ├── appointments/
-        ├── billing/
-        ├── doctors/
-        ├── inventory/
-        ├── laboratory/
-        ├── medical-records/
-        ├── patients/
-        │   └── Patients.jsx        # Currently renders PagePlaceholder
-        ├── pharmacy/
-        └── reports/
+    │   └── AppRoutes.jsx      # Route definitions with ProtectedRoute guard
+    ├── layouts/
+    │   └── DashboardLayout.jsx # App shell containing Sidebar, Navbar, and content container
+    ├── components/            # Reusable UI component library:
+    │   ├── Sidebar.jsx
+    │   ├── Navbar.jsx
+    │   ├── Card.jsx
+    │   ├── Button.jsx
+    │   ├── Badge.jsx
+    │   ├── Modal.jsx
+    │   ├── Table.jsx
+    │   └── StatsCard.jsx
+    ├── services/              # API layer:
+    │   ├── api.js             # Axios instance configured with baseURL and JWT request interceptor
+    │   ├── authService.js     # login, register, getCurrentUser
+    │   └── hospitalServices.js # Services for all 10 domain modules
+    └── pages/                 # Full feature views:
+        ├── auth/              # Login, Register
+        ├── dashboard/         # Dashboard with live KPI cards and activity tables
+        ├── patients/          # Patient list, registration, search, and details
+        ├── doctors/           # Doctor profiles and department listings
+        ├── appointments/      # Appointment booking and status management
+        ├── medical-records/   # Consultation records, diagnoses, and vitals
+        ├── prescriptions/     # Prescription creation and item management
+        ├── pharmacy/          # Medicine stock catalog and dispensing workflows
+        ├── laboratory/        # Lab tests, orders, and diagnostic results recording
+        ├── billing/           # Invoices, itemized billing, and payment processing
+        ├── reports/           # Executive summaries and operational metrics
+        ├── profile/           # User profile management
+        ├── settings/          # System configuration
+        └── not-found/         # 404 page
 ```
-
----
-
-## 5. Database Schema & Relationships
-
-The database schema is defined in [schema.sql](file:///c:/Users/Yohannes/Desktop/hospital-management-system-v2/backend/database/schema.sql). All 17 tables are active and verified in Supabase PostgreSQL:
-
-1. **`users`**: System users (admins, doctors, nurses, receptionists, pharmacists, lab technicians, accountants, staff).
-2. **`departments`**: Hospital clinical and administrative departments.
-3. **`patients`**: Patient demographics, unique `patient_number`, contact details, blood type, and allergy history.
-4. **`doctors`**: Doctor profile referencing `users(id)` and `departments(id)`, license number, specialty, consultation fee, experience.
-5. **`appointments`**: Appointment bookings linking patient, doctor, and department with status (`scheduled`, `confirmed`, `completed`, `cancelled`, `no_show`).
-6. **`medical_records`**: Clinical records linking patient, doctor, and appointment with diagnosis, symptoms, and treatment plan.
-7. **`prescriptions`**: Doctor prescriptions linked to patient and medical record, with status (`active`, `completed`, `cancelled`).
-8. **`prescription_items`**: Line items for prescriptions specifying medicine name, dosage, frequency, duration, quantity, and instructions.
-9. **`medicines`**: Pharmacy catalog with generic names, stock quantities, reorder thresholds, unit prices, batch numbers, and expiry dates.
-10. **`pharmacy_dispensing`**: Dispensing transactions linked to patient and prescription, managed by pharmacy staff.
-11. **`pharmacy_dispensing_items`**: Medicines dispensed in each dispensing transaction with quantity and unit price.
-12. **`lab_tests`**: Diagnostic test catalog with pricing, reference ranges, and units.
-13. **`lab_orders`**: Lab orders requested by doctors for patients with workflow statuses (`ordered`, `sample_collected`, `processing`, `completed`, `cancelled`).
-14. **`lab_order_items`**: Individual lab test items within an order with test results, reference ranges, technician notes, and completion timestamps.
-15. **`invoices`**: Billing invoices linking patient and appointment with subtotal, discounts, tax, total, paid amounts, balance due, and status (`unpaid`, `partially_paid`, `paid`, `overdue`, `cancelled`).
-16. **`invoice_items`**: Itemized invoice line items with descriptions, quantities, unit prices, and line totals.
-17. **`payments`**: Payment records against invoices with payment methods (`cash`, `card`, `bank_transfer`, `mobile_money`, `insurance`) and transaction references.
-
----
-
-## 6. Development Commands
-
-### Backend (`cd backend`)
-- **`npm run dev`**: Runs backend server with nodemon (`nodemon src/app.js`)
-- **`npm start`**: Runs backend server with node (`node src/app.js`)
-
-### Frontend (`cd frontend`)
-- **`npm run dev`**: Starts Vite development server
-- **`npm run build`**: Builds production bundle using Vite (`vite build`)
-- **`npm run preview`**: Previews production build (`vite preview`)
-- **`npm run lint`**: Lints frontend code using Oxlint (`oxlint`)

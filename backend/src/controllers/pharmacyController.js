@@ -292,7 +292,8 @@ const createDispensing = async (req, res) => {
         });
       }
 
-      const qty = Number(item.quantity);
+      const rawQty = item.quantity !== undefined ? item.quantity : item.quantity_dispensed;
+      const qty = Number(rawQty);
       if (isNaN(qty) || qty <= 0) {
         await client.query("ROLLBACK");
         return res.status(400).json({

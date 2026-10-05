@@ -153,6 +153,7 @@ function Pharmacy() {
         items: [
           {
             medicine_id: dispenseForm.medicine_id,
+            quantity: parseInt(dispenseForm.quantity, 10),
             quantity_dispensed: parseInt(dispenseForm.quantity, 10),
             unit_price: selectedMed ? parseFloat(selectedMed.unit_price) : 0,
             instructions: "Take as prescribed",
@@ -376,7 +377,7 @@ function Pharmacy() {
                         <td className="py-3 text-xs text-slate-800">
                           {disp.items?.map((it) => (
                             <div key={it.id} className="font-medium">
-                              {it.medicine_name} — {it.quantity_dispensed} {it.unit || "units"}
+                              {it.medicine_name} — {it.quantity_dispensed ?? it.quantity} {it.unit || "units"}
                             </div>
                           ))}
                         </td>
