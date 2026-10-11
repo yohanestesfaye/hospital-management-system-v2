@@ -92,8 +92,49 @@ const authorize = (...allowedRoles) => {
   };
 };
 
+// Optional authenticate (attaches user if valid token present, otherwise proceeds)
+const optionalAuthenticate = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next();
+    }
+
+    const token = authHeader.split(" ")[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+      return next();
+    }
+
+    const result = await pool.query(
+      `SELECT
+        id,
+        first_name,
+        last_name,
+        email,
+        role,
+        phone,
+        is_active,
+        created_at
+      FROM users
+      WHERE id = $1`,
+      [decoded.id]
+    );
+
+    if (result.rows.length > 0 && result.rows[0].is_active) {
+      req.user = result.rows[0];
+    }
+    next();
+  } catch (error) {
+    next();
+  }
+};
+
 module.exports = {
   authenticate,
   authorize,
+  optionalAuthenticate,
   JWT_SECRET,
 };

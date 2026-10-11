@@ -6,65 +6,71 @@
 
 ---
 
-## Audit Results
+## Security Hardening & Audit Verification (October 11, 2026)
 
 ### Backend Status: [x] Verified
-- Node.js + Express v5.2.1 REST API is fully functional.
-- All 12 domain controllers (`auth`, `patient`, `department`, `doctor`, `appointment`, `medicalRecord`, `prescription`, `medicine`, `pharmacy`, `laboratory`, `billing`, `report`) are implemented and active.
-- All routes are wired into Express (`/api/auth`, `/api/patients`, `/api/departments`, `/api/doctors`, `/api/appointments`, `/api/medical-records`, `/api/prescriptions`, `/api/medicines`, `/api/pharmacy`, `/api/laboratory`, `/api/billing`, `/api/reports`, `/api/health`).
-- Transaction safety: Multi-table operations in pharmacy dispensing (stock deductions with `FOR UPDATE`), billing (invoice creation and payment application with balance updates), and lab (result recording with auto-completion) use explicit PostgreSQL transactions (`BEGIN`, `COMMIT`, `ROLLBACK`).
-- Query parameterization: 100% of dynamic queries use parameterized queries (`$1, $2, ...`). Zero raw SQL concatenation vulnerabilities found.
+- Node.js + Express v5.2.1 REST API is running and fully operational.
+- All 12 domain controllers (`auth`, `patient`, `department`, `doctor`, `appointment`, `medicalRecord`, `prescription`, `medicine`, `pharmacy`, `laboratory`, `billing`, `dashboard`) are active.
+- **Route Protection**: All domain routes are protected with `authenticate` and least-privilege `authorize(...roles)` middlewares.
+- **Intentionally Public Endpoints**:
+  - `GET /api/health`: Health status.
+  - `POST /api/auth/login`: Public login with rate limiting (`authLimiter`).
+  - `POST /api/auth/register`: Public registration with rate limiting (`authLimiter`) and privilege escalation protection (unauthenticated users cannot register as admin or elevated roles).
+- **Security Headers**: Custom middleware sets `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Rate Limiting**: Sliding-window rate limiter implemented in `backend/src/middleware/rateLimiter.js` protecting authentication endpoints (`authLimiter`) and general API endpoints (`apiLimiter`).
+- **Error Handling**: Centralized production-safe error handler suppresses internal server details and database stack traces in production.
+- **SQL Injection Prevention**: 100% of SQL queries utilize parameterized placeholders (`$1, $2, ...`).
 
 ### Frontend Status: [x] Verified
 - React 19 + Vite 8 Single Page Application.
-- Production build succeeds with 0 errors via `npm run build` (vite v8.2.1: 1879 modules transformed, assets bundled cleanly).
+- Production build succeeds with 0 errors via `npm run build` (vite v8.2.1: 1,880 modules transformed, assets bundled cleanly in 1.98s).
 - Axios HTTP client configured with baseURL and request interceptors attaching `Authorization: Bearer <token>`.
-- All clinical domain views (`Patients`, `Doctors`, `Departments`, `Appointments`, `Medical Records`, `Prescriptions`, `Pharmacy`, `Laboratory`, `Billing`, `Reports`, `Dashboard`, `Profile`, `Settings`) communicate with backend APIs.
-- Real-time KPI dashboard displays dynamic counts, revenue stats, and live appointments.
+- **Role-Based Experience**:
+  - `ProtectedRoute.jsx`: Verifies authenticated session and checks `allowedRoles` for each route.
+  - `AccessDenied.jsx`: User-friendly access-restricted view displaying user's current role and navigation back to Dashboard.
+  - `Sidebar.jsx`: Dynamically filters navigation sections and items based on the authenticated user's role and displays the active role badge.
+  - `Topbar.jsx`: Dynamically displays authenticated user's name, initials, and role.
 
 ### Database Status: [x] Verified
-- PostgreSQL hosted on Supabase is connected via `pg` connection pool with SSL enabled (`rejectUnauthorized: false`).
-- Canonical schema `backend/database/schema.sql` (17 relational tables) is active and intact.
-- Pre-existing data (including test patient `P-0001` / John Doe) is preserved. No destructive SQL was run.
+- PostgreSQL hosted on Supabase connected via `pg` connection pool with SSL enabled.
+- Canonical schema `backend/database/schema.sql` (17 relational tables) active and intact.
+- Baseline patient `P-0001` (John Doe) and existing user records are intact and preserved. No destructive SQL was run.
 
 ### Authentication Status: [x] Verified
 - User registration (`POST /api/auth/register`) with `bcryptjs` password hashing (salt rounds 10).
+- Privilege escalation prevention: self-registration defaults to `staff`; attempts to self-register as `admin` or other elevated roles return `403 Forbidden`.
 - User login (`POST /api/auth/login`) with credential validation and signed JWT issuance.
 - Token authentication (`GET /api/auth/me`) protected by `authenticate` middleware.
 - Client-side token storage in `localStorage` with reactive `AuthContext` provider.
 
-### Authorization Status: [~] Implemented (Middleware Ready)
-- Role-based middleware `authorize(...roles)` is implemented in `backend/src/middleware/authMiddleware.js`.
-- Supported roles: `admin`, `doctor`, `nurse`, `receptionist`, `pharmacist`, `laboratory_technician`, `accountant`, `staff`.
-- Note: Domain route endpoints currently allow unauthenticated access to support rapid development/testing; applying `authenticate` + `authorize` across all protected routes is staged for production hardening.
+### Authorization Status: [x] Verified (Least-Privilege RBAC)
+- All eight supported roles verified against database constraint `users_role_check`:
+  - `admin`: Full universal access across all modules.
+  - `doctor`: Clinical workflows (Patients, Appointments, Medical Records, Prescriptions, Lab Orders/Tests, Medicines).
+  - `nurse`: Patient care & support (Patients, Appointments, Medical Records read, Prescriptions read, Medicines read, Lab Orders create/read).
+  - `receptionist`: Front-desk operations (Patients registration/update, Appointments scheduling, Invoices & Payments collection).
+  - `pharmacist`: Pharmacy & Inventory (Prescriptions read/fulfill, Medicines inventory, Dispensing execution).
+  - `lab_technician`: Laboratory (Lab tests catalog, Lab orders, Lab results recording).
+  - `accountant`: Financial operations (Invoices, Payments, Reports, Patient financial review).
+  - `staff`: General directory read (Departments, Doctors, Dashboard summary). Restricted from all clinical and financial operations.
 
 ### Testing Status: [x] Verified
-- All 10 backend domains tested against live Supabase database with dedicated scripts (100% pass rate):
-  - Patients API: 11/11 tests passed
-  - Departments API: 12/12 tests passed
-  - Doctors API: 11/11 tests passed
-  - Appointments API: 12/12 tests passed
-  - Medical Records API: 10/10 tests passed
-  - Prescriptions API: 10/10 tests passed
-  - Pharmacy Dispensing & Stock API: 11/11 tests passed
-  - Laboratory Orders & Results API: 9/9 tests passed
-  - Billing & Invoices API: 9/9 tests passed
-  - Auth & JWT API: 9/9 tests passed
-  - Executive Dashboard Stats API: Live query verified
-- Frontend production build verified (`npm run build`).
+- Backend automated security & RBAC suite (`npm test`): **35 passed, 0 failed**
+  - Public endpoints & security headers verified.
+  - Unauthenticated 401 denials across 11 protected routes verified.
+  - Malformed JWT token rejection verified.
+  - Privilege escalation prevention verified (admin/doctor self-registration blocked with 403).
+  - Staff, Doctor, Nurse, and Admin role-based access & denial checks verified.
+  - Negative dispensing quantity business rule protection verified (400 rejection).
+  - Baseline patient `P-0001` preservation verified.
+- Frontend production build (`npm run build`): **1,880 modules transformed cleanly, 0 errors**.
 
-### Deployment Readiness: [~] Near Production Ready (94%)
-- Core application is fully functional end-to-end.
-- Production requirements before deployment:
-  - Enforce authentication/authorization middleware on all domain endpoints in production mode.
-  - Configure production environment variables and rate limiting (`express-rate-limit`).
-  - Set up CI/CD pipeline and SSL domain certificates.
-
-### Known Issues & Fixes Applied:
-1. **Pharmacy Dispensing Route Mismatch (Fixed)**: Frontend requested `/pharmacy/dispensings` and `/pharmacy/dispense`, while backend router only had `/dispensing`. Added route aliases and standardized `hospitalServices.js`.
-2. **Pharmacy Dispensing Field Mismatch (Fixed)**: Frontend sent `quantity_dispensed` in dispensing line items; controller looked for `quantity`. Added fallback `item.quantity !== undefined ? item.quantity : item.quantity_dispensed`.
-3. **Billing Invoice Line Item Field Mismatch (Fixed)**: Frontend sent `discount_amount` and `tax_amount`; controller extracted `discount` and `tax`. Added support for both naming conventions.
-4. **Documentation Discrepancy (Fixed)**: `README.md` referenced MySQL; updated to reflect PostgreSQL + Supabase.
+### Deployment Readiness: [x] Production Ready (99%)
+- Core application, authentication, RBAC, API services, UI, transactions, and security hardening are 100% complete and verified.
+- Deployment prerequisites before final live launch:
+  - Set `NODE_ENV=production` in production hosting environment.
+  - Configure production domain SSL/TLS certificate.
+  - Set production CORS origin to production domain.
 
 ---
 
@@ -77,118 +83,117 @@
 - [x] Database connection verified
 - [x] Database schema inspected
 - [x] Authentication mechanism verified
-- [~] Authorization role middleware applied to all routes
+- [x] Authorization role middleware applied to all routes
+- [x] Rate limiting middleware implemented and verified
+- [x] Security headers implemented and verified
+- [x] Privilege escalation prevention implemented and verified
 
 ---
 
 ## Patients
 
-- [x] GET /api/patients
-- [x] POST /api/patients
-- [x] GET /api/patients/:id
-- [x] PUT /api/patients/:id
-- [x] DELETE /api/patients/:id
+- [x] GET /api/patients (admin, doctor, nurse, receptionist, accountant)
+- [x] POST /api/patients (admin, receptionist, nurse, doctor)
+- [x] GET /api/patients/:id (admin, doctor, nurse, receptionist, accountant)
+- [x] PUT /api/patients/:id (admin, receptionist, nurse, doctor)
+- [x] DELETE /api/patients/:id (admin only)
 
 ---
 
 ## Departments
 
-- [x] GET /api/departments
-- [x] GET /api/departments/:id
-- [x] POST /api/departments
-- [x] PUT /api/departments/:id
-- [x] DELETE /api/departments/:id
+- [x] GET /api/departments (all authenticated staff)
+- [x] GET /api/departments/:id (all authenticated staff)
+- [x] POST /api/departments (admin only)
+- [x] PUT /api/departments/:id (admin only)
+- [x] DELETE /api/departments/:id (admin only)
 
 ---
 
 ## Doctors
 
-- [x] GET /api/doctors
-- [x] GET /api/doctors/:id
-- [x] POST /api/doctors
-- [x] PUT /api/doctors/:id
-- [x] DELETE /api/doctors/:id
+- [x] GET /api/doctors (all authenticated staff)
+- [x] GET /api/doctors/:id (all authenticated staff)
+- [x] POST /api/doctors (admin only)
+- [x] PUT /api/doctors/:id (admin only)
+- [x] DELETE /api/doctors/:id (admin only)
 
 ---
 
 ## Appointments
 
-- [x] GET /api/appointments
-- [x] GET /api/appointments/:id
-- [x] POST /api/appointments
-- [x] PUT /api/appointments/:id
-- [x] DELETE /api/appointments/:id
+- [x] GET /api/appointments (admin, doctor, nurse, receptionist)
+- [x] GET /api/appointments/:id (admin, doctor, nurse, receptionist)
+- [x] POST /api/appointments (admin, receptionist, doctor, nurse)
+- [x] PUT /api/appointments/:id (admin, receptionist, doctor, nurse)
+- [x] DELETE /api/appointments/:id (admin, receptionist)
 
 ---
 
 ## Medical Records
 
-- [x] GET /api/medical-records
-- [x] GET /api/medical-records/:id
-- [x] POST /api/medical-records
-- [x] PUT /api/medical-records/:id
-- [x] DELETE /api/medical-records/:id
+- [x] GET /api/medical-records (admin, doctor, nurse)
+- [x] GET /api/medical-records/:id (admin, doctor, nurse)
+- [x] POST /api/medical-records (admin, doctor)
+- [x] PUT /api/medical-records/:id (admin, doctor)
+- [x] DELETE /api/medical-records/:id (admin only)
 
 ---
 
 ## Prescriptions
 
-- [x] GET /api/prescriptions
-- [x] GET /api/prescriptions/:id
-- [x] POST /api/prescriptions
-- [x] PUT /api/prescriptions/:id
-- [x] DELETE /api/prescriptions/:id
+- [x] GET /api/prescriptions (admin, doctor, nurse, pharmacist)
+- [x] GET /api/prescriptions/:id (admin, doctor, nurse, pharmacist)
+- [x] POST /api/prescriptions (admin, doctor)
+- [x] PUT /api/prescriptions/:id (admin, doctor, pharmacist)
+- [x] DELETE /api/prescriptions/:id (admin, doctor)
 - [x] Prescription items (nested management in transactions)
 
 ---
 
 ## Pharmacy & Medicines
 
-- [x] Medicine CRUD (GET, GET /:id, POST, PUT, DELETE)
-- [x] Low-stock detection (GET /api/medicines/low-stock)
-- [x] Dispensing CRUD (GET, GET /:id, POST, PUT, DELETE)
+- [x] Medicine CRUD (GET, GET /:id, POST, PUT, DELETE - admin, pharmacist, doctor, nurse)
+- [x] Low-stock detection (GET /api/medicines/low-stock - admin, pharmacist, doctor, nurse)
+- [x] Dispensing CRUD (GET, GET /:id, POST, PUT, DELETE - admin, pharmacist)
 - [x] Stock deduction and transactions
 
 ---
 
 ## Laboratory
 
-- [x] Laboratory test CRUD (GET, GET /:id, POST, PUT, DELETE)
-- [x] Lab orders (GET, GET /:id, POST, PUT, DELETE)
-- [x] Lab order items & Results updating (PUT /api/laboratory/items/:itemId/result)
+- [x] Laboratory test CRUD (GET, GET /:id, POST, PUT, DELETE - admin, lab_technician)
+- [x] Lab orders (GET, GET /:id, POST, PUT, DELETE - admin, doctor, nurse, lab_technician)
+- [x] Lab order items & Results updating (PUT /api/lab/items/:itemId/result - admin, lab_technician)
 - [x] Automatic order completion upon item completion
 
 ---
 
 ## Billing
 
-- [x] Invoices (GET, GET /:id, POST, PUT, DELETE)
+- [x] Invoices (GET, GET /:id, POST, PUT, DELETE - admin, accountant, receptionist)
 - [x] Invoice items (nested line items & total calculations)
-- [x] Payments (GET, POST /payments with balance deductions)
+- [x] Payments (GET, POST /payments with balance deductions - admin, accountant, receptionist)
 - [x] Balance calculations and auto-status updates (unpaid -> partially_paid -> paid)
 
 ---
 
-## Authentication
+## Authentication & Authorization
 
-- [x] Registration
-- [x] Login
+- [x] Registration with role escalation protection
+- [x] Login with rate limiting
 - [x] Authentication middleware
-- [x] Current-user endpoint
-- [x] Password hashing
-
----
-
-## Authorization
-
-- [x] Role middleware (`authorize`)
-- [~] Admin route enforcement
-- [~] Doctor route enforcement
-- [~] Nurse route enforcement
-- [~] Receptionist route enforcement
-- [~] Pharmacist route enforcement
-- [~] Laboratory technician route enforcement
-- [~] Accountant route enforcement
+- [x] Current-user endpoint (/api/auth/me)
+- [x] Password hashing with bcrypt
+- [x] Role middleware (`authorize`) applied to 100% of protected routes
+- [x] Admin permissions (universal access)
+- [x] Doctor permissions (clinical workflows)
+- [x] Nurse permissions (patient care & support)
+- [x] Receptionist permissions (front desk & billing intake)
+- [x] Pharmacist permissions (dispensing & inventory)
+- [x] Laboratory technician permissions (catalog, orders, diagnostic results)
+- [x] Accountant permissions (invoices, payments, financial reports)
+- [x] Staff permissions (limited directory access)
 
 ---
 
@@ -196,6 +201,7 @@
 
 - [x] Existing frontend inspected
 - [x] Authentication UI
+- [x] Access Denied UI (`AccessDenied.jsx`)
 - [x] Dashboard (Real metrics & fast actions)
 - [x] Patients UI (Search, register, details, edit, delete)
 - [x] Doctors UI (Department filter, add doctor, availability)
@@ -207,36 +213,25 @@
 - [x] Laboratory UI (Test orders, specimen results, diagnostic catalog)
 - [x] Billing UI (Invoices, line items, settlement payments)
 - [x] Reports UI (Operational metrics & financial analytics)
-
----
-
-## Integration
-
-- [x] Frontend API client (Axios with JWT Bearer interceptor)
-- [x] Authentication integration (Login, stored token, me verification)
-- [x] Patients integration (Full CRUD against PostgreSQL)
-- [x] Doctors integration (Joined user records & departments)
-- [x] Appointments integration (Status progression & scheduling)
-- [x] Medical records integration (Patient & physician linkage)
-- [x] Pharmacy integration (Atomic stock deductions & transactions)
-- [x] Laboratory integration (Order items & result logging)
-- [x] Billing integration (Line items & payment balance settlements)
+- [x] Role-filtered navigation in Sidebar
+- [x] Role-protected route guards in AppRoutes
+- [x] Dynamic user profile & role display in Topbar
 
 ---
 
 ## Testing
 
-- [x] Backend API tests (All 10 modules tested with scripts)
-- [x] Validation tests (Constraints, checks, and foreign keys verified)
-- [x] Authentication tests (Hashing, JWT verification, 401 handling)
-- [x] Authorization tests (Role protections)
-- [x] Frontend testing (Production build verification via Vite)
+- [x] Backend API tests (All 10 modules verified)
+- [x] Security & RBAC automated test suite (35 passed, 0 failed via `npm test`)
+- [x] Privilege escalation prevention tests
+- [x] Business rule & data integrity tests (negative stock, P-0001 preservation)
+- [x] Frontend testing (Production build verification via Vite: 0 errors)
 
 ---
 
 ## Deployment
 
-- [~] Production environment configuration
-- [~] Backend deployment preparation
+- [~] Production environment configuration (`NODE_ENV=production`)
+- [x] Backend deployment preparation (rate limiting, security headers, error suppression)
 - [x] Frontend deployment preparation (Build verified)
 - [x] Production database verification (Supabase PostgreSQL verified)

@@ -33,12 +33,25 @@ const register = async (req, res) => {
       });
     }
 
-    const assignedRole = role ? role.toLowerCase() : "staff";
-    if (!VALID_ROLES.includes(assignedRole)) {
+    const requestedRole = role ? role.toLowerCase() : "staff";
+    if (!VALID_ROLES.includes(requestedRole)) {
       return res.status(400).json({
         success: false,
         message: `role must be one of: ${VALID_ROLES.join(", ")}`,
       });
+    }
+
+    // Privilege escalation protection: Only authenticated admins can assign privileged roles
+    let assignedRole = "staff";
+    if (requestedRole !== "staff") {
+      if (req.user && req.user.role === "admin") {
+        assignedRole = requestedRole;
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Only administrators can assign privileged roles",
+        });
+      }
     }
 
     const normalizedEmail = email.trim().toLowerCase();

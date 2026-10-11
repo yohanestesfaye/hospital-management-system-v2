@@ -7,13 +7,17 @@ const {
   updateDoctor,
   deleteDoctor,
 } = require("../controllers/doctorController");
+const { authenticate, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/", getDoctors);
-router.post("/", createDoctor);
-router.get("/:id", getDoctorById);
-router.put("/:id", updateDoctor);
-router.delete("/:id", deleteDoctor);
+// Read doctors (all authenticated staff)
+router.get("/", authenticate, getDoctors);
+router.get("/:id", authenticate, getDoctorById);
+
+// Admin-only management
+router.post("/", authenticate, authorize("admin"), createDoctor);
+router.put("/:id", authenticate, authorize("admin"), updateDoctor);
+router.delete("/:id", authenticate, authorize("admin"), deleteDoctor);
 
 module.exports = router;

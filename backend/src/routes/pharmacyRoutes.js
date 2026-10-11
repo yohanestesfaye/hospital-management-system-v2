@@ -7,29 +7,85 @@ const {
   updateDispensing,
   deleteDispensing,
 } = require("../controllers/pharmacyController");
+const { authenticate, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// List dispensings
-router.get("/dispensing", getDispensingRecords);
-router.get("/dispensings", getDispensingRecords);
-router.get("/", getDispensingRecords);
+// List dispensings (admin, pharmacist)
+router.get(
+  "/dispensing",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  getDispensingRecords
+);
+router.get(
+  "/dispensings",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  getDispensingRecords
+);
+router.get(
+  "/",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  getDispensingRecords
+);
 
-// Create dispensing
-router.post("/dispensing", createDispensing);
-router.post("/dispense", createDispensing);
-router.post("/", createDispensing);
+// Create dispensing (admin, pharmacist)
+router.post(
+  "/dispensing",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  createDispensing
+);
+router.post(
+  "/dispense",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  createDispensing
+);
+router.post(
+  "/",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  createDispensing
+);
 
 // Get single dispensing
-router.get("/dispensing/:id", getDispensingById);
-router.get("/:id", getDispensingById);
+router.get(
+  "/dispensing/:id",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  getDispensingById
+);
+router.get(
+  "/:id",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  getDispensingById
+);
 
 // Update dispensing
-router.put("/dispensing/:id", updateDispensing);
-router.put("/:id", updateDispensing);
+router.put(
+  "/dispensing/:id",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  updateDispensing
+);
+router.put(
+  "/:id",
+  authenticate,
+  authorize("admin", "pharmacist"),
+  updateDispensing
+);
 
-// Delete dispensing
-router.delete("/dispensing/:id", deleteDispensing);
-router.delete("/:id", deleteDispensing);
+// Delete dispensing (admin only)
+router.delete(
+  "/dispensing/:id",
+  authenticate,
+  authorize("admin"),
+  deleteDispensing
+);
+router.delete("/:id", authenticate, authorize("admin"), deleteDispensing);
 
 module.exports = router;

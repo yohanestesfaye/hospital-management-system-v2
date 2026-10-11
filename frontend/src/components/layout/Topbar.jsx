@@ -1,6 +1,21 @@
 import { Bell, Search, Menu } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 function Topbar({ onMenuClick }) {
+  const { user } = useAuth();
+
+  const initials = user
+    ? `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase() || "U"
+    : "U";
+
+  const fullName = user
+    ? `${user.first_name} ${user.last_name}`
+    : "Hospital User";
+
+  const roleLabel = user?.role
+    ? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace("_", " ")
+    : "Staff";
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
       <div className="flex items-center gap-3">
@@ -39,16 +54,16 @@ function Topbar({ onMenuClick }) {
 
         <div className="flex items-center gap-3 border-l border-slate-200 pl-2 sm:pl-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
-            AD
+            {initials}
           </div>
 
           <div className="hidden sm:block">
-            <p className="text-sm font-semibold text-slate-900">
-              Admin
+            <p className="text-sm font-semibold text-slate-900 leading-tight">
+              {fullName}
             </p>
 
-            <p className="text-xs text-slate-500">
-              Administrator
+            <p className="text-xs text-slate-500 capitalize">
+              {roleLabel}
             </p>
           </div>
         </div>

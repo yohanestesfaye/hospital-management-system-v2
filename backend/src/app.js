@@ -27,7 +27,31 @@ app.use(
   })
 );
 
+const { apiLimiter } = require("./middleware/rateLimiter");
+
+// Security Headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
+// Health check (always available, unthrottled)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Hospital Management System API is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use(express.json());
+
+// Apply API rate limiting
+app.use("/api", apiLimiter);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/patients", patientRoutes);
@@ -41,29 +65,24 @@ app.use("/api/pharmacy", pharmacyRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api/billing", billingRoutes);
 
-
-
-
-
-
-
-
-
-
-// Health check
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Hospital Management System API is running",
-    timestamp: new Date().toISOString(),
-  });
-});
-
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: "Route not found",
+  });
+});
+
+// Centralized production-safe error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled API error:", err);
+  const status = err.status || 500;
+  res.status(status).json({
+    success: false,
+    message:
+      process.env.NODE_ENV === "production"
+        ? "An unexpected error occurred"
+        : err.message || "An unexpected error occurred",
   });
 });
 

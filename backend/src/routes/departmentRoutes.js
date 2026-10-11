@@ -7,13 +7,17 @@ const {
   updateDepartment,
   deleteDepartment,
 } = require("../controllers/departmentController");
+const { authenticate, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/", getDepartments);
-router.post("/", createDepartment);
-router.get("/:id", getDepartmentById);
-router.put("/:id", updateDepartment);
-router.delete("/:id", deleteDepartment);
+// Read departments (all authenticated staff)
+router.get("/", authenticate, getDepartments);
+router.get("/:id", authenticate, getDepartmentById);
+
+// Admin-only management
+router.post("/", authenticate, authorize("admin"), createDepartment);
+router.put("/:id", authenticate, authorize("admin"), updateDepartment);
+router.delete("/:id", authenticate, authorize("admin"), deleteDepartment);
 
 module.exports = router;

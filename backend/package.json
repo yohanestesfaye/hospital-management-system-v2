@@ -1,13 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
- "scripts": {
-  "dev": "nodemon src/app.js",
-  "start": "node src/app.js",
-  "test": "echo \"Error: no test specified\" && exit 1"
-},
+  "description": "Hospital Management System V2 Backend",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js",
+    "test": "node scratch/test_security_authorization.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

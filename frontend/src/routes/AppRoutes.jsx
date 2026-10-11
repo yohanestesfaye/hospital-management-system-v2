@@ -7,6 +7,7 @@ import {
 
 import Dashboard from "../pages/dashboard/Dashboard";
 import Login from "../pages/auth/Login";
+import AccessDenied from "../pages/auth/AccessDenied";
 
 import Patients from "../pages/patients/Patients";
 import Doctors from "../pages/doctors/Doctors";
@@ -27,63 +28,91 @@ function AppRoutes() {
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/access-denied" element={<AccessDenied />} />
 
-        {/* Protected routes */}
+        {/* Protected routes - General (All authenticated staff) */}
         <Route element={<ProtectedRoute />}>
-          <Route
-            path="/dashboard"
-            element={<Dashboard />}
-          />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/doctors" element={<Doctors />} />
+          <Route path="/departments" element={<Departments />} />
+        </Route>
 
-          <Route
-            path="/patients"
-            element={<Patients />}
-          />
+        {/* Patients: admin, doctor, nurse, receptionist, accountant */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["admin", "doctor", "nurse", "receptionist", "accountant"]}
+            />
+          }
+        >
+          <Route path="/patients" element={<Patients />} />
+        </Route>
 
-          <Route
-            path="/doctors"
-            element={<Doctors />}
-          />
+        {/* Appointments: admin, doctor, nurse, receptionist */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["admin", "doctor", "nurse", "receptionist"]}
+            />
+          }
+        >
+          <Route path="/appointments" element={<Appointments />} />
+        </Route>
 
-          <Route
-            path="/departments"
-            element={<Departments />}
-          />
+        {/* Clinical Records: admin, doctor, nurse */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["admin", "doctor", "nurse"]}
+            />
+          }
+        >
+          <Route path="/medical-records" element={<MedicalRecords />} />
+        </Route>
 
-          <Route
-            path="/appointments"
-            element={<Appointments />}
-          />
+        {/* Laboratory: admin, doctor, nurse, lab_technician */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["admin", "doctor", "nurse", "lab_technician"]}
+            />
+          }
+        >
+          <Route path="/laboratory" element={<Laboratory />} />
+        </Route>
 
-          <Route
-            path="/medical-records"
-            element={<MedicalRecords />}
-          />
+        {/* Pharmacy & Medicines: admin, pharmacist */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["admin", "pharmacist"]}
+            />
+          }
+        >
+          <Route path="/pharmacy" element={<Pharmacy />} />
+          <Route path="/inventory" element={<Inventory />} />
+        </Route>
 
-          <Route
-            path="/laboratory"
-            element={<Laboratory />}
-          />
+        {/* Billing: admin, accountant, receptionist */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["admin", "accountant", "receptionist"]}
+            />
+          }
+        >
+          <Route path="/billing" element={<Billing />} />
+        </Route>
 
-          <Route
-            path="/pharmacy"
-            element={<Pharmacy />}
-          />
-
-          <Route
-            path="/billing"
-            element={<Billing />}
-          />
-
-          <Route
-            path="/inventory"
-            element={<Inventory />}
-          />
-
-          <Route
-            path="/reports"
-            element={<Reports />}
-          />
+        {/* Reports: admin, accountant, doctor */}
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["admin", "accountant", "doctor"]}
+            />
+          }
+        >
+          <Route path="/reports" element={<Reports />} />
         </Route>
 
         {/* Default route */}

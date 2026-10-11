@@ -9,18 +9,49 @@ const {
   getPayments,
   createPayment,
 } = require("../controllers/billingController");
+const { authenticate, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 // Invoices
-router.get("/invoices", getInvoices);
-router.post("/invoices", createInvoice);
-router.get("/invoices/:id", getInvoiceById);
-router.put("/invoices/:id", updateInvoice);
-router.delete("/invoices/:id", deleteInvoice);
+router.get(
+  "/invoices",
+  authenticate,
+  authorize("admin", "accountant", "receptionist"),
+  getInvoices
+);
+router.get(
+  "/invoices/:id",
+  authenticate,
+  authorize("admin", "accountant", "receptionist"),
+  getInvoiceById
+);
+router.post(
+  "/invoices",
+  authenticate,
+  authorize("admin", "accountant", "receptionist"),
+  createInvoice
+);
+router.put(
+  "/invoices/:id",
+  authenticate,
+  authorize("admin", "accountant"),
+  updateInvoice
+);
+router.delete("/invoices/:id", authenticate, authorize("admin"), deleteInvoice);
 
 // Payments
-router.get("/payments", getPayments);
-router.post("/payments", createPayment);
+router.get(
+  "/payments",
+  authenticate,
+  authorize("admin", "accountant"),
+  getPayments
+);
+router.post(
+  "/payments",
+  authenticate,
+  authorize("admin", "accountant", "receptionist"),
+  createPayment
+);
 
 module.exports = router;
