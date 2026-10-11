@@ -195,8 +195,10 @@ const createMedicine = async (req, res) => {
       });
     }
 
+    const rawStock =
+      quantity_in_stock !== undefined ? quantity_in_stock : req.body.stock_quantity;
     const stock =
-      quantity_in_stock !== undefined ? Number(quantity_in_stock) : 0;
+      rawStock !== undefined ? Number(rawStock) : 0;
     if (isNaN(stock) || stock < 0) {
       return res.status(400).json({
         success: false,
@@ -318,9 +320,13 @@ const updateMedicine = async (req, res) => {
       });
     }
 
-    const stock =
+    const rawStock =
       quantity_in_stock !== undefined
-        ? Number(quantity_in_stock)
+        ? quantity_in_stock
+        : req.body.stock_quantity;
+    const stock =
+      rawStock !== undefined
+        ? Number(rawStock)
         : current.quantity_in_stock;
     if (isNaN(stock) || stock < 0) {
       return res.status(400).json({

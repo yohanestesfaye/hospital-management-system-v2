@@ -151,3 +151,33 @@ frontend/
         ├── settings/          # System configuration
         └── not-found/         # 404 page
 ```
+
+---
+
+## 5. Security & Verification Baseline
+
+### Eight Configured Roles
+- `admin`: Universal administrator access, user provisioning, system configuration, destructive deletes.
+- `doctor`: Clinical workflows (Patients, Appointments, Medical Records, Prescriptions, Lab Orders).
+- `nurse`: Inpatient and outpatient clinical care assistance (Patients, Vitals, Lab orders, Medicine viewing).
+- `receptionist`: Patient admissions, appointment scheduling, and billing payment collection.
+- `pharmacist`: Medicine inventory, prescription fulfillment, and atomic dispensing.
+- `lab_technician`: Diagnostic catalog, lab order processing, and specimen test result entry.
+- `accountant`: Financial ledger, invoicing, balance calculations, payments, and financial reports.
+- `staff`: General hospital staff directory viewing (Departments, Doctors, Dashboard KPIs).
+
+### Security Architecture
+- **JWT Authentication & RBAC**: Stateless signed JSON Web Tokens checked on all protected endpoints.
+- **Independent Authorization**: Backend strictly enforces `authorize(...roles)` regardless of frontend client behavior.
+- **SQL Injection Defense**: 100% of queries use parameterized queries (`$1, $2, ...`) via `pg` connection pool.
+- **Transaction Safety**: All multi-step operations (dispensing inventory deduction, lab orders with items, invoices with line items, payments with balance updates) execute inside `BEGIN ... COMMIT` with row-level locks (`FOR UPDATE`).
+- **Scheduling Conflict Prevention**: Double booking doctors at identical date and time is rejected with HTTP 409 Conflict.
+- **Inventory Protection**: Negative stock is rejected at database and transaction levels.
+- **Financial Balances**: Overpayments on settled invoices are rejected with HTTP 400.
+
+### Verification Baseline
+- Automated Security Suite (`npm test`): **35 passed, 0 failed**.
+- Comprehensive E2E Clinical Workflows (`node scratch/test_e2e_workflows.js`): **45 passed, 0 failed**.
+- Frontend Production Build (`npm run build`): **1,880 modules transformed cleanly, 0 errors**.
+- Database Integrity: Live Supabase PostgreSQL database intact; baseline patient `P-0001` (John Doe) preserved.
+

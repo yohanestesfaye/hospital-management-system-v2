@@ -55,7 +55,7 @@
   - `staff`: General directory read (Departments, Doctors, Dashboard summary). Restricted from all clinical and financial operations.
 
 ### Testing Status: [x] Verified
-- Backend automated security & RBAC suite (`npm test`): **35 passed, 0 failed**
+- **Backend automated security & RBAC suite (`npm test`)**: **35 passed, 0 failed**
   - Public endpoints & security headers verified.
   - Unauthenticated 401 denials across 11 protected routes verified.
   - Malformed JWT token rejection verified.
@@ -63,7 +63,18 @@
   - Staff, Doctor, Nurse, and Admin role-based access & denial checks verified.
   - Negative dispensing quantity business rule protection verified (400 rejection).
   - Baseline patient `P-0001` preservation verified.
-- Frontend production build (`npm run build`): **1,880 modules transformed cleanly, 0 errors**.
+- **Comprehensive E2E Workflow Test Suite (`node scratch/test_e2e_workflows.js`)**: **45 passed, 0 failed**
+  - All 10 major hospital workflows verified end-to-end.
+  - All 8 roles tested for both permitted actions and access denials.
+  - Doctor double-booking scheduling conflict prevention verified (HTTP 409).
+  - Atomic pharmacy dispensing & negative inventory rejection verified.
+  - Lab test diagnostic order creation, result logging & auto-completion verified.
+  - Itemized invoicing, partial payments, settlements, and overpayment rejections verified.
+  - Complete safe cleanup of isolated test data verified with `P-0001` baseline intact.
+- **Frontend production build (`npm run build`)**: **1,880 modules transformed cleanly, 0 errors**.
+- **Deliverables Created**:
+  - `ROLE_PERMISSION_MATRIX.md`: Complete 8-role CRUD matrix for all protected endpoints.
+  - `PROJECT_TEST_REPORT.md`: Comprehensive test report with exact commands and results.
 
 ### Deployment Readiness: [x] Production Ready (99%)
 - Core application, authentication, RBAC, API services, UI, transactions, and security hardening are 100% complete and verified.

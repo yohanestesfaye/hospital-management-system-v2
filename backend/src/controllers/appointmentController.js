@@ -302,6 +302,23 @@ const createAppointment = async (req, res) => {
       });
     }
 
+    // Check doctor schedule conflict (prevent double booking)
+    const conflictCheck = await pool.query(
+      `SELECT id FROM appointments
+       WHERE doctor_id = $1
+         AND appointment_date = $2
+         AND appointment_time = $3
+         AND status NOT IN ('cancelled', 'no_show')`,
+      [doctor_id, appointment_date, appointment_time]
+    );
+
+    if (conflictCheck.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "Doctor is already booked for an appointment at this date and time",
+      });
+    }
+
     const insertResult = await pool.query(
       `INSERT INTO appointments (
         patient_id,
@@ -481,6 +498,34 @@ const updateAppointment = async (req, res) => {
         success: false,
         message: `status must be one of: ${VALID_STATUSES.join(", ")}`,
       });
+    }
+
+    const finalDate =
+      appointment_date !== undefined ? appointment_date : current.appointment_date;
+    const finalTime =
+      appointment_time !== undefined ? appointment_time : current.appointment_time;
+
+    if (
+      (appointment_date !== undefined ||
+        appointment_time !== undefined ||
+        doctor_id !== undefined) &&
+      !["cancelled", "no_show"].includes(targetStatus)
+    ) {
+      const conflictCheck = await pool.query(
+        `SELECT id FROM appointments
+         WHERE doctor_id = $1
+           AND appointment_date = $2
+           AND appointment_time = $3
+           AND id != $4
+           AND status NOT IN ('cancelled', 'no_show')`,
+        [targetDoctorId, finalDate, finalTime, id]
+      );
+      if (conflictCheck.rows.length > 0) {
+        return res.status(409).json({
+          success: false,
+          message: "Doctor is already booked for an appointment at this date and time",
+        });
+      }
     }
 
     await pool.query(

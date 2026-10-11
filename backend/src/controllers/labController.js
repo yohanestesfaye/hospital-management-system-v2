@@ -571,7 +571,13 @@ const createLabOrder = async (req, res) => {
       });
     }
 
-    if (!Array.isArray(tests) || tests.length === 0) {
+    const testList = Array.isArray(tests)
+      ? tests
+      : Array.isArray(req.body.items)
+      ? req.body.items
+      : [];
+
+    if (!Array.isArray(testList) || testList.length === 0) {
       return res.status(400).json({
         success: false,
         message: "At least one test is required in tests array",
@@ -652,8 +658,11 @@ const createLabOrder = async (req, res) => {
 
     const orderId = orderResult.rows[0].id;
 
-    for (const testItem of tests) {
-      const testId = typeof testItem === "object" ? testItem.lab_test_id : testItem;
+    for (const testItem of testList) {
+      const testId =
+        typeof testItem === "object"
+          ? (testItem.lab_test_id || testItem.test_id || testItem.id)
+          : testItem;
 
       if (!testId || !isValidUuid(testId)) {
         await client.query("ROLLBACK");

@@ -158,10 +158,14 @@ const createPatient = async (req, res) => {
       is_active,
     } = req.body;
 
-    if (!patient_number || !first_name || !last_name) {
+    const patNum = patient_number
+      ? patient_number.trim()
+      : `P-${Date.now().toString().slice(-6)}`;
+
+    if (!first_name || !last_name) {
       return res.status(400).json({
         success: false,
-        message: "patient_number, first_name and last_name are required",
+        message: "first_name and last_name are required",
       });
     }
 
@@ -198,7 +202,7 @@ const createPatient = async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *`,
       [
-        patient_number.trim(),
+        patNum.trim(),
         first_name.trim(),
         last_name.trim(),
         date_of_birth || null,
