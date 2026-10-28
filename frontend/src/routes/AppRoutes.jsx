@@ -8,6 +8,7 @@ import {
 import Dashboard from "../pages/dashboard/Dashboard";
 import Login from "../pages/auth/Login";
 import AccessDenied from "../pages/auth/AccessDenied";
+import LandingPage from "../pages/landing/LandingPage";
 
 import Patients from "../pages/patients/Patients";
 import Doctors from "../pages/doctors/Doctors";
@@ -115,16 +116,13 @@ function AppRoutes() {
           <Route path="/reports" element={<Reports />} />
         </Route>
 
-        {/* Default route */}
-        <Route
-          path="/"
-          element={<Navigate to="/dashboard" replace />}
-        />
+        {/* Public home / landing route */}
+        <Route path="/" element={<LandingPage />} />
 
-        {/* Unknown routes */}
+        {/* Unknown routes redirect to public home */}
         <Route
           path="*"
-          element={<Navigate to="/dashboard" replace />}
+          element={<Navigate to="/" replace />}
         />
       </Routes>
     </BrowserRouter>
