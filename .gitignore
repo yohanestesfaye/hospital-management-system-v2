@@ -141,3 +141,12 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Database backups and dumps
+backups/
+backend/backups/
+*.dump
+*.backup
+*.sql.gz
+*.sql.tar
+*.bak

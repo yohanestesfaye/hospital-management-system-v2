@@ -1,3 +1,8 @@
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const { testDatabaseConnection } = require("./config/database");
+
 const patientRoutes = require("./routes/patientRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
@@ -10,19 +15,32 @@ const labRoutes = require("./routes/labRoutes");
 const billingRoutes = require("./routes/billingRoutes");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
-const { testDatabaseConnection } = require("./config/database");
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
 
 const app = express();
 
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration: support local development and production CLIENT_URL
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
+if (process.env.CLIENT_URL) {
+  process.env.CLIENT_URL.split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean)
+    .forEach((origin) => {
+      if (!allowedOrigins.includes(origin)) {
+        allowedOrigins.push(origin);
+      }
+    });
+}
+
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -88,6 +106,13 @@ app.use((err, req, res, next) => {
 
 // Start server
 const startServer = async () => {
+  if (process.env.NODE_ENV === "production" && (!process.env.JWT_SECRET || !process.env.JWT_SECRET.trim())) {
+    console.error(
+      "FATAL ERROR: JWT_SECRET environment variable is required in production mode."
+    );
+    process.exit(1);
+  }
+
   await testDatabaseConnection();
 
   app.listen(PORT, () => {
@@ -101,4 +126,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = app;
+module.exports = app;

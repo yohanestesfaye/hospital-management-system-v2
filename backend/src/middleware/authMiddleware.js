@@ -1,7 +1,17 @@
 const jwt = require("jsonwebtoken");
 const { pool } = require("../config/database");
 
-const JWT_SECRET = process.env.JWT_SECRET || "hms_v2_production_secret_key_2026";
+const isProduction = process.env.NODE_ENV === "production";
+
+if (isProduction && (!process.env.JWT_SECRET || !process.env.JWT_SECRET.trim())) {
+  console.error(
+    "FATAL ERROR: JWT_SECRET environment variable is required in production mode."
+  );
+  process.exit(1);
+}
+
+const JWT_SECRET =
+  process.env.JWT_SECRET || "hms_v2_development_jwt_secret_key";
 
 // Authenticate JWT Token
 const authenticate = async (req, res, next) => {
